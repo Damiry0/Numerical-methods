@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace Simpson_Rule
 {
     partial class FormMain
     {

@@ -1,18 +1,17 @@
-﻿using org.mariuszgromada.math.mxparser;
+﻿using System;
+using System.Globalization;
+using System.Windows.Forms;
+using org.mariuszgromada.math.mxparser;
+using OxyPlot;
+using OxyPlot.Series;
 
-namespace WindowsFormsApplication1
+namespace Simpson_Rule
 {
-    using System;
-    using System.Windows.Forms;
-
-    using OxyPlot;
-    using OxyPlot.Series;
-
     public partial class FormMain : Form
     {
-        private PlotModel model;
+        private PlotModel _model;
 
-        private delegate double FUNC(double x);
+        private delegate double Func(double x);
 
         public FormMain()
         {
@@ -20,7 +19,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Oblicza calke metoda Simpsona w przedziale od xp do xk z dokladnoscia n dla funkcji fun
+        /// Oblicza calke metoda Simpsona w przedziale od xp do xk z dokladnoscia n dla funkcji func
         /// </summary>
         /// <param name="xp">poczatek przedzialu calkowania</param>
         /// <param name="xk">koniec przedzialu calkowania</param>
@@ -28,7 +27,7 @@ namespace WindowsFormsApplication1
         /// <param name="func">funkcja calkowana</param>
         /// <returns>przyblizona wartosc calki</returns>
         /// 
-        private static double calculate(double xp, double xk, int n, FUNC func)
+        private static double Calculate(double xp, double xk, int n, Func func)
         {
             double dx, calka, s, x;
 
@@ -36,7 +35,7 @@ namespace WindowsFormsApplication1
 
             calka = 0;
             s = 0;
-            for (int i = 1; i < n; i++)
+            for (var i = 1; i < n; i++)
             {
                 x = xp + i * dx;
                 s += func(x - dx / 2);
@@ -59,11 +58,11 @@ namespace WindowsFormsApplication1
 
         public FunctionSeries GetFunction()
         {
-            int n = 30;
+            var n = 30;
             FunctionSeries series = new FunctionSeries();
-            for (int x = -30; x < n; x++)
+            for (var x = -30; x < n; x++)
             {
-                for (int y = -30; y < n; y++)
+                for (var y = -30; y < n; y++)
                 {
                     DataPoint data = new DataPoint(x, func(x));
                     series.Points.Add(data);
@@ -74,27 +73,32 @@ namespace WindowsFormsApplication1
 
         private void graph()
         {
-            var function = "Funckja:" + textBoxFunctionCalc.Text;
-            model = new PlotModel { Title = function };
+            var function = "Funkcja:" + textBoxFunctionCalc.Text;
+            _model = new PlotModel
+            {
+                Title = function,
+                LegendPosition = LegendPosition.RightBottom,
+                LegendPlacement = LegendPlacement.Outside,
+                LegendOrientation = LegendOrientation.Horizontal
+            };
 
-            model.LegendPosition = LegendPosition.RightBottom;
-            model.LegendPlacement = LegendPlacement.Outside;
-            model.LegendOrientation = LegendOrientation.Horizontal;
 
-            model.Series.Add(GetFunction());
-            var Yaxis = new OxyPlot.Axes.LinearAxis();
-            OxyPlot.Axes.LinearAxis XAxis = new OxyPlot.Axes.LinearAxis { Position = OxyPlot.Axes.AxisPosition.Bottom, Minimum = -30, Maximum = 30 };
-            XAxis.Title = "x";
-            Yaxis.Title = "y=" + textBoxFunctionCalc.Text;
-            model.Axes.Add(Yaxis);
-            model.Axes.Add(XAxis);
-            this.plot1.Model = model;
+            _model.Series.Add(GetFunction());
+            var yAxis = new OxyPlot.Axes.LinearAxis();
+            OxyPlot.Axes.LinearAxis xAxis = new OxyPlot.Axes.LinearAxis
+            {
+                Position = OxyPlot.Axes.AxisPosition.Bottom, Minimum = -30, Maximum = 30, Title = "x"
+            };
+            yAxis.Title = "y=" + textBoxFunctionCalc.Text;
+            _model.Axes.Add(yAxis);
+            _model.Axes.Add(xAxis);
+            this.plot1.Model = _model;
         }
 
         private void buttonCalculate_Click(object sender, EventArgs e)
         {
-            textBoxResult.Text = calculate(double.Parse(textBoxBeginningCalc.Text), double.Parse(textBoxEndCalc.Text),
-                int.Parse(textBoxAccuracyCalc.Text), new FUNC(func)).ToString();
+            textBoxResult.Text = Calculate(double.Parse(textBoxBeginningCalc.Text), double.Parse(textBoxEndCalc.Text),
+                int.Parse(textBoxAccuracyCalc.Text), new Func(func)).ToString(CultureInfo.CurrentCulture);
             graph();
         }
     }
